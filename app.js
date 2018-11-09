@@ -1,6 +1,9 @@
 // import needed libraries
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
+
+// import routes
 const api = require('./routes/api');
 const dashboard = require('./routes/dashboard');
 
@@ -9,6 +12,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // add middlewares
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static('public'));
