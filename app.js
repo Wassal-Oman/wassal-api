@@ -2,6 +2,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
 
 // import routes
 const api = require('./routes/api');
@@ -16,16 +18,38 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static('public'));
+app.use(cookieParser());
+app.use(session({
+    key: 'user_sid',
+    secret: 'somerandonstuffs',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        expires: 600000
+    }
+}));
 
 // set the view engine and views folder
 app.set('view engine', 'ejs');
 app.set('views', 'views');
+
+// clear for cookies if exist
+app.use((req, res, next) => {
+    if (req.cookies.user_sid && !req.session.user) {
+        res.clearCookie('user_sid');        
+    }
+    next();
+});
 
 // api
 app.use('/api', api);
 
 // dashbaord
 app.use('/', dashboard);
+
+app.use((req, res, next) => {
+    res.status(404).render('pages/404');
+});
 
 // start server
 app.listen(port, () => console.log(`running on port ${port}`));

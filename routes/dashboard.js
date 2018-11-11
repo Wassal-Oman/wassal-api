@@ -1,61 +1,87 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const mysql = require('mysql2');
 const settings = require('../settings');
-const route = express.Router();
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const User = require('../models');
 
-// create db connection
-const connection = mysql.createConnection(settings.db_connection);
+// initialize router
+const router = express.Router();
 
 // access token
 let accessToken = '';
 
-route.get('/', (req, res) => {
+// middleware function to check for logged-in users
+const sessionChecker = (req, res, next) => {
+    if (req.session.user && req.cookies.user_sid) {
+        res.redirect('/');
+    } else {
+        next();
+    }    
+};
+
+router.get('/', sessionChecker, (req, res) => {
     res.redirect('/login');
 });
 
-// defualt route
-route.get('/login', (req, res) => {
-    res.render('pages/login');
-});
+router.route('/login')
+    .get(sessionChecker, (req, res) => {
+        res.render('pages/login');
+    })
+    .post((req, res) => {
+        // get email and password
+        let username = req.body.username;
+        let password = req.body.password;
 
-// login route
-route.post('/login', (req, res) => {
-    // get email and password
-    const email = req.body.email;
-    const password = req.body.password;
+        User.findOne({ where: { username: username } }).then((user) => {
+            if (!user) {
+                res.redirect('/login');
+            } else if (!user.validPassword(password)) {
+                res.redirect('/login');
+            } else {
+                req.session.user = user.dataValues;
+                res.redirect('/home');
+            }
+        });
+    });
 
-    // simple query
-    connection.query(
-        'SELECT * FROM `Admin` WHERE `ad_email` = ?', [email], (err, results) => {
-            let data = results[0];
+// route for user signup
+router.route('/signup')
+    .get(sessionChecker, (req, res) => {
+        res.render('pages/signup');
+    })
+    .post((req, res) => {
+        User.create({
+            username: req.body.username,
+            email: req.body.email,
+            password: req.body.password
+        })
+        .then(user => {
+            req.session.user = user.dataValues;
+            res.redirect('/home');
+        })
+        .catch(error => {
+            res.redirect('/signup');
+        });
+    });
 
-            // check user
-            checkUser(password, data.ad_password).then((match) => {
-                if(match) {
-                    accessToken = 'token';
-                    res.redirect('/home');
-                } else {
-                    res.send('Wrong username or password!');
-                }
-            });
+router.get('/home', (req, res) => {
 
-        }
-    );
-});
-
-route.get('/home', (req, res) => {
-
-    if(accessToken === '') {
-        res.redirect('/login');
-    } else {
+    if (req.session.user && req.cookies.user_sid) {
         res.render('pages/home');
+    } else {
+        res.redirect('/login');
     }
 });
 
-async function checkUser(password, hashedPass) {
-    return await bcrypt.compare(password, hashedPass);
-}
+router.get('/logout', (req, res) => {
+    if (req.session.user && req.cookies.user_sid) {
+        res.clearCookie('user_sid');
+        res.redirect('/');
+    } else {
+        res.redirect('/login');
+    }
+});
 
 // export all routes
-module.exports = route;
+module.exports = router;
