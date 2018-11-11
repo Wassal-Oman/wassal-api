@@ -7,13 +7,20 @@ const route = express.Router();
 // create db connection
 const connection = mysql.createConnection(settings.db_connection);
 
-// defualt route
+// access token
+let accessToken = '';
+
 route.get('/', (req, res) => {
-    res.render('pages/index');
+    res.redirect('/login');
+});
+
+// defualt route
+route.get('/login', (req, res) => {
+    res.render('pages/login');
 });
 
 // login route
-route.post('/admin-login', (req, res) => {
+route.post('/login', (req, res) => {
     // get email and password
     const email = req.body.email;
     const password = req.body.password;
@@ -26,7 +33,8 @@ route.post('/admin-login', (req, res) => {
             // check user
             checkUser(password, data.ad_password).then((match) => {
                 if(match) {
-                    res.send('Login Successful!');
+                    accessToken = 'token';
+                    res.redirect('/home');
                 } else {
                     res.send('Wrong username or password!');
                 }
@@ -34,6 +42,15 @@ route.post('/admin-login', (req, res) => {
 
         }
     );
+});
+
+route.get('/home', (req, res) => {
+
+    if(accessToken === '') {
+        res.redirect('/login');
+    } else {
+        res.render('pages/home');
+    }
 });
 
 async function checkUser(password, hashedPass) {

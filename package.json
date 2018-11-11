@@ -23,6 +23,7 @@
     "ejs": "^2.6.1",
     "express": "^4.16.4",
     "jsonwebtoken": "^8.3.0",
-    "mysql2": "^1.6.4"
+    "mysql2": "^1.6.4",
+    "nodemailer": "^4.6.8"
   }
 }
