@@ -20,8 +20,8 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static('public'));
 app.use(cookieParser());
 app.use(session({
-    key: 'user_sid',
-    secret: 'somerandonstuffs',
+    key: 'user',
+    secret: 'WASSALAPISECRET',
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -35,8 +35,8 @@ app.set('views', 'views');
 
 // clear for cookies if exist
 app.use((req, res, next) => {
-    if (req.cookies.user_sid && !req.session.user) {
-        res.clearCookie('user_sid');        
+    if (req.cookies.user && !req.session.user) {
+        res.clearCookie('user');        
     }
     next();
 });

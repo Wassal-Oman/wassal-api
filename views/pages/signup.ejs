@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Wassal | Login</title>
+  <title>Wassal | New Admin</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
   <!-- Bootstrap 3.3.7 -->
@@ -26,16 +26,16 @@
 </head>
 <body class="hold-transition login-page">
 <div class="login-box">
-  <div class="login-logo">
-    <a href="/login"><img src="/images/logo.png" alt="Wassal Logo" width="100" height="100"></a>
-  </div>
   <!-- /.login-logo -->
   <div class="login-box-body">
-    <p class="login-box-msg">Sign In To Wassal Admin Dashboard</p>
+    <div class="login-logo">
+      <a href="/login"><img src="/images/logo.png" alt="Wassal Logo" width="100" height="100"></a>
+    </div>
+    <p class="login-box-msg">Sign Up a New Admin</p>
     <form action="/signup" method="POST">
       <div class="form-group has-feedback">
-        <input name="username" type="text" class="form-control" placeholder="Username" required>
-        <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+        <input name="name" type="text" class="form-control" placeholder="Name" required>
+        <span class="glyphicon glyphicon-user form-control-feedback"></span>
       </div>
       <div class="form-group has-feedback">
         <input name="email" type="email" class="form-control" placeholder="Email" required>
@@ -47,7 +47,7 @@
       </div>
       <div class="row">
         <div class="col-xs-12">
-          <button type="submit" class="btn btn-primary btn-block btn-flat">Sign In</button>
+          <button type="submit" class="btn btn-primary btn-block btn-flat">Sign Up</button>
         </div>
       </div>
     </form>

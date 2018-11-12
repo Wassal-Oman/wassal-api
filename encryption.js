@@ -4,10 +4,7 @@ const settings = require('./settings');
 // salt rounds
 const saltRounds = settings.round;
 
-module.exports = (text) => {
-
-    console.log("cryptPassword" + text);
-
+const hashData = (text) => {
     return new Promise((resolve, reject) => {
         bcrypt.genSalt(saltRounds, (err, salt) => {
             // Encrypt password using bycrpt module
@@ -20,3 +17,15 @@ module.exports = (text) => {
         });
     });
 }
+
+const compareData = (text, hash) => {
+    return new Promise((resolve, reject) => {
+        bcrypt.compare(text, hash, (err, same) => {
+            if(err) return reject(err);
+            return resolve(same);
+        })
+    });
+}
+
+module.exports.hashData = hashData;
+module.exports.compareData = compareData;

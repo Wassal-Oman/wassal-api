@@ -19,6 +19,7 @@ const sequelize = new Sequelize(conn.database, conn.user, conn.password, {
     operatorsAliases: false
 });
 
+// admin schema
 const Admin = sequelize.define('admins', {
     id: {
         type: Sequelize.INTEGER,
@@ -36,8 +37,7 @@ const Admin = sequelize.define('admins', {
         allowNull: false,
         validate: {
             isEmail: true,
-            notEmpty: true,
-            notNull: true
+            notEmpty: true
         }
     },
     password: {
@@ -51,7 +51,7 @@ const Admin = sequelize.define('admins', {
 }, {
     hooks: {
         beforeCreate: (user) => {
-            return encrypt(user.password).then((hash) => {
+            return encrypt.hashData(user.password).then((hash) => {
                 user.password = hash;
             }).catch((err) => {
                 if(err) console.log(err);
@@ -59,5 +59,13 @@ const Admin = sequelize.define('admins', {
         }
     }
 });
+
+Admin.prototype.validPassword = (password, hash) => {
+    return encrypt.compareData(password, hash).then((val) => {
+        return val;
+    });
+}
+
+sequelize.sync({ force: true }).then(() => console.log('Admin Table Created!'));
 
 module.exports = Admin;

@@ -1,0 +1,1 @@
+INSERT INTO `admins` (`id`,`name`,`email`,`password`,`status`,`createdAt`,`updatedAt`) VALUES (DEFAULT,'Super Admin','wassal6616@gmail.com','$2b$10$8SmtGXI9hsNxYYk0EnIbzeHuGNHwhfCFPw1vClDmPdWqIRLm1qT92',1,'2018-11-12 11:44:14','2018-11-12 11:44:14');

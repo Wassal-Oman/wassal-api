@@ -1,58 +1,71 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
-const settings = require('../settings');
-const cookieParser = require('cookie-parser');
-const session = require('express-session');
-const User = require('../models');
+const Admin = require('../models/Admin');
+const encrypt = require('../encryption');
 
 // initialize router
 const router = express.Router();
 
-// access token
-let accessToken = '';
-
 // middleware function to check for logged-in users
 const sessionChecker = (req, res, next) => {
-    if (req.session.user && req.cookies.user_sid) {
-        res.redirect('/');
+    if (!req.session.user && !req.cookies.user) {
+        res.redirect('/login');
     } else {
         next();
     }    
 };
 
+// root route
 router.get('/', sessionChecker, (req, res) => {
-    res.redirect('/login');
+    res.redirect('/home');
 });
 
+// login route
 router.route('/login')
-    .get(sessionChecker, (req, res) => {
-        res.render('pages/login');
+    .get((req, res) => {
+        if(req.session.user && req.cookies.user) {
+            res.redirect('/home');
+        } else {
+            res.render('pages/login');
+        }
     })
     .post((req, res) => {
         // get email and password
-        let username = req.body.username;
+        let email = req.body.email;
         let password = req.body.password;
 
-        User.findOne({ where: { username: username } }).then((user) => {
+        Admin.findOne({ where: { email: email, status: 2 } }).then((user) => {
+            console.log(user.dataValues);
             if (!user) {
                 res.redirect('/login');
-            } else if (!user.validPassword(password)) {
-                res.redirect('/login');
             } else {
-                req.session.user = user.dataValues;
-                res.redirect('/home');
+                // compare input password with db password
+                encrypt.compareData(password, user.dataValues.password).then(val => {
+                    console.log(val);
+                    if(!val) {
+                        res.redirect('/login');
+                    } else {
+                        req.session.user = user.dataValues;
+                        res.redirect('/home');
+                    }
+                }).catch(err => {
+                    console.log(err);
+                    res.redirect('/login');
+                });
             }
+        }).catch(err => {
+            console.log(err);
+            res.redirect('/login');
         });
     });
 
-// route for user signup
+// signup route
 router.route('/signup')
-    .get(sessionChecker, (req, res) => {
+    .get( (req, res) => {
         res.render('pages/signup');
     })
     .post((req, res) => {
-        User.create({
-            username: req.body.username,
+        Admin.create({
+            name: req.body.name,
             email: req.body.email,
             password: req.body.password
         })
@@ -61,26 +74,20 @@ router.route('/signup')
             res.redirect('/home');
         })
         .catch(error => {
+            console.log(error);
             res.redirect('/signup');
         });
     });
 
-router.get('/home', (req, res) => {
-
-    if (req.session.user && req.cookies.user_sid) {
-        res.render('pages/home');
-    } else {
-        res.redirect('/login');
-    }
+// home route
+router.get('/home', sessionChecker, (req, res) => {
+    res.render('pages/home');
 });
 
-router.get('/logout', (req, res) => {
-    if (req.session.user && req.cookies.user_sid) {
-        res.clearCookie('user_sid');
-        res.redirect('/');
-    } else {
-        res.redirect('/login');
-    }
+// logout route
+router.get('/logout', sessionChecker, (req, res) => {
+    res.clearCookie('user');
+    res.redirect('/login');
 });
 
 // export all routes
