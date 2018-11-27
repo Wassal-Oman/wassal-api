@@ -45,9 +45,14 @@
         <input name="password" type="password" class="form-control" placeholder="Password" required>
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>
-      <div class="row">
+      <div class="row form-group">
         <div class="col-xs-12">
           <button type="submit" class="btn btn-primary btn-block btn-flat">Sign Up</button>
+        </div>
+      </div>
+      <div class="row form-group">
+        <div class="col-xs-12">
+          <a href="/home?name=<%= name %>&email=<%= email %>" class="btn btn-default btn-block btn-flat">Go Back</a>
         </div>
       </div>
     </form>

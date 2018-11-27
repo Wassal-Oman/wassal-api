@@ -6,6 +6,9 @@ const encrypt = require('../encryption');
 // import database connection details
 const conn = settings.connection;
 
+// import admin credentails
+const super_admin = settings.SUPER_ADMIN;
+
 // create connection
 const sequelize = new Sequelize(conn.database, conn.user, conn.password, {
     host: conn.host,
@@ -17,6 +20,13 @@ const sequelize = new Sequelize(conn.database, conn.user, conn.password, {
         idle: 10000
     },
     operatorsAliases: false
+});
+
+// check database connection
+sequelize.authenticate().then(() => {
+    console.log('Connection has been established successfully.');
+}).catch(err => {
+    console.error('Unable to connect to the database:', err);
 });
 
 // admin schema
@@ -66,6 +76,16 @@ Admin.prototype.validPassword = (password, hash) => {
     });
 }
 
-sequelize.sync({ force: true }).then(() => console.log('Admin Table Created!'));
+sequelize.sync({ force: true }).then(() => {
+    console.log('Admin Table Created!');
+    
+    // create super admin user
+    return Admin.create({
+        name: super_admin.NAME,
+        email: super_admin.EMAIL,
+        password: super_admin.PASSWORD,
+        status: super_admin.STATUS
+    });
+});
 
 module.exports = Admin;

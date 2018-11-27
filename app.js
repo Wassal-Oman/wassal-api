@@ -16,7 +16,7 @@ const port = process.env.PORT || 3000;
 // add middlewares
 app.use(cors());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'));
 app.use(cookieParser());
 app.use(session({
@@ -47,6 +47,7 @@ app.use('/api', api);
 // dashbaord
 app.use('/', dashboard);
 
+// if route does not exist
 app.use((req, res, next) => {
     res.status(404).render('pages/404');
 });
