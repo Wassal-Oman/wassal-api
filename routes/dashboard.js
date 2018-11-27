@@ -45,7 +45,7 @@ router.route('/login')
                         res.redirect('/login');
                     } else {
                         req.session.user = user.dataValues;
-                        res.redirect(`/home?name=${user.dataValues.name}&email=${user.dataValues.email}`);
+                        res.redirect('/home');
                     }
                 }).catch(err => {
                     console.log(err);
@@ -61,20 +61,9 @@ router.route('/login')
 // signup route
 router.route('/signup')
     .get(sessionChecker, (req, res) => {
-        // get name and email
-        let name = req.query.name;
-        let email = req.query.email;
-
-        res.render('pages/signup', {
-            name: name,
-            email: email
-        });
+        res.render('pages/signup');
     })
     .post(sessionChecker, (req, res) => {
-        // get name and email
-        let name = req.query.name;
-        let email = req.query.email;
-        
         Admin.create({
             name: req.body.name,
             email: req.body.email,
@@ -82,22 +71,18 @@ router.route('/signup')
             status: 2
         })
         .then(user => {
-            req.session.user = user.dataValues;
-            res.redirect(`/home?name=${name}&email=${email}`);
+            res.redirect('/home');
         })
         .catch(error => {
-            console.log(error);
-            res.redirect(`/signup?name=${name}&email=${email}`);
+            res.redirect('/signup');
         });
     });
 
 // home route
 router.get('/home', sessionChecker, (req, res) => {
     // get name and email
-    let name = req.query.name;
-    let email = req.query.email;
-
-    // get all customer details
+    let name = req.session.user.name;
+    let email = req.session.user.email;
 
     res.render('pages/home', {
         name: name,

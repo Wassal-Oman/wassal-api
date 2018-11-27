@@ -1,7 +1,7 @@
 // import needed libraries
 const Sequelize = require('sequelize');
 const settings = require('./settings');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // import database connection details
 const conn = settings.connection;
