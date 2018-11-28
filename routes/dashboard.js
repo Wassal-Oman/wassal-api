@@ -90,6 +90,54 @@ router.get('/home', sessionChecker, (req, res) => {
     });
 });
 
+// adminstrators route
+router.get('/admins', sessionChecker, (req, res) => {
+    // get name and email
+    let name = req.session.user.name;
+    let email = req.session.user.email;
+
+    res.render('pages/administrators', {
+        name: name,
+        email: email
+    });
+});
+
+// customers route
+router.get('/customers', sessionChecker, (req, res) => {
+    // get name and email
+    let name = req.session.user.name;
+    let email = req.session.user.email;
+
+    res.render('pages/customers', {
+        name: name,
+        email: email
+    });
+});
+
+// truck drivers route
+router.get('/truck-drivers', sessionChecker, (req, res) => {
+    // get name and email
+    let name = req.session.user.name;
+    let email = req.session.user.email;
+
+    res.render('pages/truckers', {
+        name: name,
+        email: email
+    });
+});
+
+// requests route
+router.get('/requests', sessionChecker, (req, res) => {
+    // get name and email
+    let name = req.session.user.name;
+    let email = req.session.user.email;
+
+    res.render('pages/requests', {
+        name: name,
+        email: email
+    });
+});
+
 // logout route
 router.get('/logout', sessionChecker, (req, res) => {
     res.clearCookie('user');
