@@ -34,7 +34,6 @@ router.route('/login')
         let password = req.body.password;
 
         Admin.findOne({ where: { email: email, status: 2 } }).then((user) => {
-            console.log(user.dataValues);
             if (!user) {
                 res.redirect('/login');
             } else {

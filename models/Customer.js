@@ -48,13 +48,11 @@ const Customer = sequelize.define('customers', {
         }
     },
     phone: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         unique: true,
         allowNull: false,
         validate: {
             isNumeric: true,
-            max: 8,
-            min: 8,
             notEmpty: true
         }
     },
@@ -64,6 +62,7 @@ const Customer = sequelize.define('customers', {
     },
     status: {
         type: Sequelize.TINYINT,
+        allowNull: false,
         defaultValue: 1
     }
 }, {
@@ -78,12 +77,14 @@ const Customer = sequelize.define('customers', {
     }
 });
 
+// validate password through this method
 Customer.prototype.validPassword = (password, hash) => {
     return encrypt.compareData(password, hash).then((val) => {
         return val;
     });
 }
 
+// create customer table once application starts
 sequelize.sync({ force: true }).then(() => {
     console.log('Customer Table Created!');
 });

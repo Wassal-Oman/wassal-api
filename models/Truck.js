@@ -1,7 +1,7 @@
 // import needed libraries
 const Sequelize = require('sequelize');
 const settings = require('../settings');
-const encrypt = require('../encryption');
+const Trucker = require('./Trucker');
 
 // import database connection details
 const conn = settings.connection;
@@ -26,66 +26,53 @@ sequelize.authenticate().then(() => {
     console.error('Unable to connect to the database:', err);
 });
 
-// customer schema
-const Trucker = sequelize.define('truckers', {
+// truck schema
+const Truck = sequelize.define('trucks', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    name: {
+    type: {
         type: Sequelize.STRING,
-        unique: false,
-        allowNull: false
-    },
-    email: {
-        type: Sequelize.STRING,
-        unique: true,
         allowNull: false,
         validate: {
-            isEmail: true,
-            notEmpty: true
+            max: 1
         }
     },
-    phone: {
+    capacity: {
         type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0
+    },
+    plate: {
+        type: Sequelize.STRING,
         unique: true,
         allowNull: false,
         validate: {
-            isNumeric: true,
-            max: 8,
-            min: 8,
-            notEmpty: true
+            isAlphanumeric: true
         }
     },
-    password: {
+    image: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        validate: {
+            isUrl: true
+        }
     },
     status: {
         type: Sequelize.TINYINT,
+        allowNull: false,
         defaultValue: 1
     }
-}, {
-    hooks: {
-        beforeCreate: (user) => {
-            return encrypt.hashData(user.password).then((hash) => {
-                user.password = hash;
-            }).catch((err) => {
-                if(err) console.log(err);
-            });
-        }
-    }
 });
 
-Trucker.prototype.validPassword = (password, hash) => {
-    return encrypt.compareData(password, hash).then((val) => {
-        return val;
-    });
-}
+// create a foreign key relationship between Trucker and Truck tables
+Truck.belongsTo(Trucker);
 
+// create truck table once application starts
 sequelize.sync({ force: true }).then(() => {
-    console.log('Trucker Table Created!');
+    console.log('Truck Table Created!');
 });
 
-module.exports = Trucker;
+module.exports = Truck;

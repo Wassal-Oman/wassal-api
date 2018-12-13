@@ -56,6 +56,7 @@ const Admin = sequelize.define('admins', {
     },
     status: {
         type: Sequelize.TINYINT,
+        allowNull: false,
         defaultValue: 1
     }
 }, {
@@ -70,12 +71,14 @@ const Admin = sequelize.define('admins', {
     }
 });
 
+// validate password through this method
 Admin.prototype.validPassword = (password, hash) => {
     return encrypt.compareData(password, hash).then((val) => {
         return val;
     });
 }
 
+// create admin once application starts
 sequelize.sync({ force: true }).then(() => {
     console.log('Admin Table Created!');
     

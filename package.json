@@ -4,7 +4,8 @@
   "description": "Wassal RESTful API",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
     "ejs": "^2.6.1",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
+    "joi": "^14.3.0",
     "jsonwebtoken": "^8.3.0",
     "mysql2": "^1.6.4",
     "nexmo": "^2.4.0",

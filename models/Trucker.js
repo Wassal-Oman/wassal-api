@@ -26,7 +26,7 @@ sequelize.authenticate().then(() => {
     console.error('Unable to connect to the database:', err);
 });
 
-// customer schema
+// trucker schema
 const Trucker = sequelize.define('truckers', {
     id: {
         type: Sequelize.INTEGER,
@@ -48,13 +48,11 @@ const Trucker = sequelize.define('truckers', {
         }
     },
     phone: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         unique: true,
         allowNull: false,
         validate: {
             isNumeric: true,
-            max: 8,
-            min: 8,
             notEmpty: true
         }
     },
@@ -64,6 +62,7 @@ const Trucker = sequelize.define('truckers', {
     },
     status: {
         type: Sequelize.TINYINT,
+        allowNull: false,
         defaultValue: 1
     }
 }, {
@@ -78,12 +77,14 @@ const Trucker = sequelize.define('truckers', {
     }
 });
 
+// validate password through this method
 Trucker.prototype.validPassword = (password, hash) => {
     return encrypt.compareData(password, hash).then((val) => {
         return val;
     });
 }
 
+// create trucker table once application starts
 sequelize.sync({ force: true }).then(() => {
     console.log('Trucker Table Created!');
 });
