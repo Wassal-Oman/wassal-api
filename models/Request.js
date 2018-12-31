@@ -1,6 +1,6 @@
 // import needed libraries
 const Sequelize = require('sequelize');
-const settings = require('../settings');
+const settings = require('../config/settings');
 const Customer = require('./Customer');
 
 // import database connection details
@@ -102,8 +102,10 @@ const Request = sequelize.define('requests', {
 Request.belongsTo(Customer);
 
 // create request table once application starts
-sequelize.sync({ force: true }).then(() => {
+sequelize.sync().then(() => {
     console.log('Request Table Created!');
-});
+}).catch((err) => {
+    console.log(err);
+});;
 
 module.exports = Request;

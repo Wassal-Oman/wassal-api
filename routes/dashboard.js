@@ -1,13 +1,17 @@
 const express = require('express');
 const Admin = require('../models/Admin');
-const encrypt = require('../encryption');
+const Customer = require('../models/Customer');
+const Trucker = require('../models/Trucker');
+const Truck = require('../models/Truck');
+const Request = require('../models/Request');
+const encrypt = require('../config/encryption');
 
 // initialize router
 const router = express.Router();
 
 // middleware function to check for logged-in users
 const sessionChecker = (req, res, next) => {
-    if (!req.session.user && !req.cookies.user) {
+    if (!req.session.user) {
         res.redirect('/login');
     } else {
         next();
@@ -22,16 +26,14 @@ router.get('/', sessionChecker, (req, res) => {
 // login route
 router.route('/login')
     .get((req, res) => {
-        if(req.session.user && req.cookies.user) {
+        if(req.session.user) {
             res.redirect('/home');
-        } else {
-            res.render('pages/login');
-        }
+        } 
+        res.render('login');
     })
     .post((req, res) => {
         // get email and password
-        let email = req.body.email;
-        let password = req.body.password;
+        const { email, password } = req.body;
 
         Admin.findOne({ where: { email: email, status: 2 } }).then((user) => {
             if (!user) {
@@ -60,19 +62,18 @@ router.route('/login')
 // signup route
 router.route('/signup')
     .get(sessionChecker, (req, res) => {
-        res.render('pages/signup');
+        res.render('signup');
     })
     .post(sessionChecker, (req, res) => {
         Admin.create({
             name: req.body.name,
             email: req.body.email,
             password: req.body.password,
+            phone: req.body.phone,
             status: 2
-        })
-        .then(user => {
+        }).then(user => {
             res.redirect('/home');
-        })
-        .catch(error => {
+        }).catch(error => {
             res.redirect('/signup');
         });
     });
@@ -80,68 +81,203 @@ router.route('/signup')
 // home route
 router.get('/home', sessionChecker, (req, res) => {
     // get name and email
-    let name = req.session.user.name;
-    let email = req.session.user.email;
+    const { name, email } = req.session.user;
 
-    res.render('pages/home', {
-        name: name,
-        email: email
+    // get statistics
+    let customerPromise = getCustomersCount();
+    let truckerPromise = getTruckersCount();
+    let truckPromise = getTrucksCount();
+    let requestPromise = getRequestsCount();
+
+    Promise.all([customerPromise, truckerPromise, truckPromise, requestPromise]).then(val => {
+        // render home page
+        res.render('home', {
+            name: name,
+            email: email,
+            customerCount: val[0],
+            truckerCount: val[1],
+            truckCount: val[2],
+            requestCount: val[3]
+        });
+    }).catch(err => {
+        console.log(err);
+        res.redirect('/500');
     });
 });
 
 // adminstrators route
 router.get('/admins', sessionChecker, (req, res) => {
     // get name and email
-    let name = req.session.user.name;
-    let email = req.session.user.email;
+    const { name, email } = req.session.user;
 
-    res.render('pages/administrators', {
-        name: name,
-        email: email
+    // get records
+    getAdministrators().then(data => {
+        res.render('administrators', {
+            name: name,
+            email: email,
+            data
+        });
+    }).catch(err => {
+        console.log(err);
+        res.redirect('/500');
     });
 });
 
 // customers route
 router.get('/customers', sessionChecker, (req, res) => {
     // get name and email
-    let name = req.session.user.name;
-    let email = req.session.user.email;
+    const { name, email } = req.session.user;
 
-    res.render('pages/customers', {
-        name: name,
-        email: email
+    // get records
+    getCustomers().then(data => {
+        res.render('customers', {
+            name: name,
+            email: email,
+            data
+        });
+    }).then(err => {
+        console.log(err);
+        res.redirect('/500');
     });
 });
 
 // truck drivers route
 router.get('/truck-drivers', sessionChecker, (req, res) => {
     // get name and email
-    let name = req.session.user.name;
-    let email = req.session.user.email;
+    const { name, email } = req.session.user;
 
-    res.render('pages/truckers', {
-        name: name,
-        email: email
+    // get records
+    getTruckers().then(data => {
+        res.render('truckers', {
+            name: name,
+            email: email,
+            data
+        });
+    }).catch(err => {
+        console.log(err);
+        res.redirect('/500');
     });
 });
 
 // requests route
 router.get('/requests', sessionChecker, (req, res) => {
     // get name and email
-    let name = req.session.user.name;
-    let email = req.session.user.email;
+    const { name, email } = req.session.user;
 
-    res.render('pages/requests', {
-        name: name,
-        email: email
+     // get records
+    getRequests().then(data => {
+        res.render('requests', {
+            name: name,
+            email: email,
+            data
+        });
+    }).catch(err => {
+        console.log(err);
+        res.redirect('/500');
     });
 });
 
 // logout route
 router.get('/logout', sessionChecker, (req, res) => {
-    res.clearCookie('user');
+    // destroy session and redirect to login
+    req.session.destroy();
     res.redirect('/login');
 });
+
+router.get('/500', (req, res) => {
+    res.render('500');
+});
+
+/* ***** Functions and Middlewares ***** */
+function getAdministrators() {
+    return new Promise((resolve, reject) => {
+        Admin.findAll({ where: { status: 2 } }).then(val => {
+            return resolve(val);
+        }).catch(err => {
+            return reject(err);
+        });
+    });
+}
+
+function getCustomers() {
+    return new Promise((resolve, reject) => {
+        Customer.findAll({ where: { status: 2 } }).then(val => {
+            return resolve(val);
+        }).catch(err => {
+            return reject(err);
+        });
+    });
+}
+
+function getTruckers() {
+    return new Promise((resolve, reject) => {
+        Trucker.findAll().then(val => {
+            return resolve(val);
+        }).catch(err => {
+            return reject(err);
+        });
+    });
+}
+
+function getTrucks() {
+    return new Promise((resolve, reject) => {
+        Truck.findAll().then(val => {
+            return resolve(val);
+        }).catch(err => {
+            return reject(err);
+        });
+    });
+}
+
+function getRequests() {
+    return new Promise((resolve, reject) => {
+        Request.findAll().then(val => {
+            return resolve(val);
+        }).catch(err => {
+            return reject(err);
+        });
+    });
+}
+
+function getCustomersCount() {
+    return new Promise((resolve, reject) => {
+        Customer.findAndCountAll({ where: { status: 2 } }).then(val => {
+            return resolve(val.count);
+        }).catch(err => {
+            return reject(err);
+        });
+    });
+}
+
+function getTruckersCount() {
+    return new Promise((resolve, reject) => {
+        Trucker.findAndCountAll({ where: { status: 2 } }).then(val => {
+            return resolve(val.count);
+        }).catch(err => {
+            return reject(err);
+        });
+    });
+}
+
+function getTrucksCount() {
+    return new Promise((resolve, reject) => {
+        Truck.findAndCountAll().then(val => {
+            return resolve(val.count);
+        }).catch(err => {
+            return reject(err);
+        });
+    });
+}
+
+function getRequestsCount() {
+    return new Promise((resolve, reject) => {
+        Request.findAndCountAll().then(val => {
+            return resolve(val.count);
+        }).catch(err => {
+            return reject(err);
+        });
+    });
+}
 
 // export all routes
 module.exports = router;

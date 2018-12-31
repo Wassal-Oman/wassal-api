@@ -1,6 +1,6 @@
 // import needed libraries
 const Sequelize = require('sequelize');
-const settings = require('../settings');
+const settings = require('../config/settings');
 const Trucker = require('./Trucker');
 const Request = require('./Request');
 
@@ -50,8 +50,10 @@ Rate.belongsTo(Trucker);
 Rate.belongsTo(Request);
 
 // create rate table once application starts
-sequelize.sync({ force: true }).then(() => {
+sequelize.sync().then(() => {
     console.log('Rate Table Created!');
-});
+}).catch((err) => {
+    console.log(err);
+});;
 
 module.exports = Rate;

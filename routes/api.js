@@ -1,11 +1,11 @@
 const express = require("express");
 const Joi = require("joi");
 const jwt = require("jsonwebtoken");
-const encrypt = require("../encryption");
-const router = express.Router();
+const encrypt = require("../config/encryption");
 const Customer = require("../models/Customer");
 const Trucker = require("../models/Trucker");
-const settings = require("../settings");
+const settings = require("../config/settings");
+const router = express.Router();
 
 // get JWT secret key
 const jwtSecretKey = settings.JWT_SECRET_KEY;

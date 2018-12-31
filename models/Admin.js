@@ -1,7 +1,7 @@
 // import needed libraries
 const Sequelize = require('sequelize');
-const settings = require('../settings');
-const encrypt = require('../encryption');
+const settings = require('../config/settings');
+const encrypt = require('../config/encryption');
 
 // import database connection details
 const conn = settings.connection;
@@ -50,6 +50,15 @@ const Admin = sequelize.define('admins', {
             notEmpty: true
         }
     },
+    phone: {
+        type: Sequelize.STRING,
+        unique: true,
+        allowNull: false,
+        validate: {
+            isNumeric: true,
+            notEmpty: true
+        }
+    },
     password: {
         type: Sequelize.STRING,
         allowNull: false
@@ -80,6 +89,7 @@ Admin.prototype.validPassword = (password, hash) => {
 
 // create admin once application starts
 sequelize.sync({ force: true }).then(() => {
+    
     console.log('Admin Table Created!');
     
     // create super admin user
@@ -87,8 +97,12 @@ sequelize.sync({ force: true }).then(() => {
         name: super_admin.NAME,
         email: super_admin.EMAIL,
         password: super_admin.PASSWORD,
+        phone: super_admin.PHONE,
         status: super_admin.STATUS
     });
+}).catch((err) => {
+    console.log(err);
 });
 
+// export module
 module.exports = Admin;

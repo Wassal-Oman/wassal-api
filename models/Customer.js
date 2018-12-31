@@ -1,7 +1,7 @@
 // import needed libraries
 const Sequelize = require('sequelize');
-const settings = require('../settings');
-const encrypt = require('../encryption');
+const settings = require('../config/settings');
+const encrypt = require('../config/encryption');
 
 // import database connection details
 const conn = settings.connection;
@@ -85,8 +85,10 @@ Customer.prototype.validPassword = (password, hash) => {
 }
 
 // create customer table once application starts
-sequelize.sync({ force: true }).then(() => {
+sequelize.sync().then(() => {
     console.log('Customer Table Created!');
-});
+}).catch((err) => {
+    console.log(err);
+});;
 
 module.exports = Customer;

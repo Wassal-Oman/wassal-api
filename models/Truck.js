@@ -1,6 +1,6 @@
 // import needed libraries
 const Sequelize = require('sequelize');
-const settings = require('../settings');
+const settings = require('../config/settings');
 const Trucker = require('./Trucker');
 
 // import database connection details
@@ -71,8 +71,10 @@ const Truck = sequelize.define('trucks', {
 Truck.belongsTo(Trucker);
 
 // create truck table once application starts
-sequelize.sync({ force: true }).then(() => {
+sequelize.sync().then(() => {
     console.log('Truck Table Created!');
-});
+}).catch((err) => {
+    console.log(err);
+});;
 
 module.exports = Truck;

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Wassal | Requests</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <!-- Bootstrap 3.3.7 -->
+  <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/bower_components/font-awesome/css/font-awesome.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="/bower_components/Ionicons/css/ionicons.min.css">
+  <!-- jvectormap -->
+  <link rel="stylesheet" href="/bower_components/jvectormap/jquery-jvectormap.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/dist/css/AdminLTE.min.css">
+  <!-- AdminLTE Skins. Choose a skin from the css/skins -->
+  <link rel="stylesheet" href="/dist/css/skins/_all-skins.min.css">
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <script src="/js/html5shiv.min.js"></script>
+  <script src="/js/respond.min.js"></script>
+  <!-- Google Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+    
+  <!-- nav partial -->
+  <%- include('partials/nav', { name: name, email: email }); %>
+
+  <!-- sidebar partial -->
+  <%- include('partials/sidebar', { name: name }); %>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="box">
+
+            <!-- Table Header -->
+            <div class="box-header">
+              <h3 class="box-title">List of requests</h3>
+            </div>
+
+            <!-- Table Body -->
+            <div class="box-body">
+              <table id="table" class="table table-bordered table-striped">
+                <thead>
+                  <tr>
+                    <th>Description</th>
+                    <th>Created At</th>
+                    <th>Manage</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if(data != null && data.length > 0) { %>
+                  <% data.forEach(d => { %>
+                    <tr>
+                      <td><%= d.description %></td>
+                      <td><%= d.createdAt %></td>
+                      <td>
+                        <div class="dropdown">
+                          <a class="btn dropdown-toggle" style="background-color:transparent;" data-toggle="dropdown">
+                            <i class="glyphicon glyphicon-cog text-primary" style="font-size: 1.5rem;"></i>
+                          </a>
+                          <ul class="dropdown-menu">
+                            <li><a href="#">Delete</a></li>
+                            <li><a href="#">Update</a></li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); } else { %>
+                    <tr>
+                      <td colspan="3" class="text-center">No Data Available</td>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer class="main-footer">
+      <div class="pull-right hidden-xs">
+          <b>Version</b> 1.0.0
+      </div>
+      <strong>Copyright &copy; 2018 <a href="https://wassal.net">Wassal</a>.</strong> All rights reserved.
+  </footer>
+  <div class="control-sidebar-bg"></div>
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery 3 -->
+<script src="/bower_components/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap 3.3.7 -->
+<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<!-- DataTables -->
+<script src="/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+<!-- SlimScroll -->
+<script src="/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+<!-- FastClick -->
+<script src="/bower_components/fastclick/lib/fastclick.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/dist/js/demo.js"></script>
+<!-- page script -->
+<script>
+  $(function () {
+    $('#table').DataTable()
+  });
+</script>
+</body>
+</html>

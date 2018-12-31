@@ -30,6 +30,7 @@ const SUPER_ADMIN = {
     NAME: 'SUPER ADMIN',
     EMAIL: 'wassal6616@gmail.com',
     PASSWORD: 'Wassal@123$',
+    PHONE: '96132329',
     STATUS: 2
 };
 
