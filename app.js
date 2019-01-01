@@ -1,8 +1,9 @@
 // import needed libraries
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors');
 const session = require('express-session');
+const cors = require('cors');
+const flash = require('connect-flash');
 
 // import routes
 const api = require('./routes/api');
@@ -17,6 +18,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'));
+app.use(flash());
 app.use(session({
     key: 'user',
     secret: 'WASSALAPISECRET',
@@ -28,6 +30,14 @@ app.use(session({
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
+// notification messages
+app.use(function(req, res, next) {
+    res.locals.success = req.flash('success');
+    res.locals.error = req.flash('error');
+    res.locals.warning = req.flash('warning');
+    next();
+});
+
 // api
 app.use('/api', api);
 
@@ -36,7 +46,7 @@ app.use('/', dashboard);
 
 // if route does not exist
 app.use((req, res, next) => {
-    res.render('404');
+    res.status(404).render('404');
 });
 
 // start server

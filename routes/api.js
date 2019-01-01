@@ -11,16 +11,31 @@ const router = express.Router();
 const jwtSecretKey = settings.JWT_SECRET_KEY;
 
 // define user login schema
-const userLoginSchema = Joi.object().keys({
+const loginSchema = Joi.object().keys({
     phone: Joi.string().regex(/^\d+$/).min(8).max(8).required(),
     password: Joi.string().min(6).required()
 });
 
 // define user register schema
-const userRegisterSchema = Joi.object().keys({
+const registerSchema = Joi.object().keys({
     name: Joi.string().required(),
     email: Joi.string().email().required(),
     phone: Joi.string().regex(/^\d+$/).min(8).max(8).required(),
+    password: Joi.string().min(6).required().strict(),
+    confirmPassword: Joi.string().valid(Joi.ref("password")).required().strict()
+});
+
+// define user profile schema
+const profileSchema = Joi.object().keys({
+    id: Joi.string().required(),
+    name: Joi.string().required(),
+    email: Joi.string().email().required(),
+    phone: Joi.string().regex(/^\d+$/).min(8).max(8).required()
+});
+
+// define change password schema
+const changePasswordSchema = Joi.object().keys({
+    id: Joi.string().required(),
     password: Joi.string().min(6).required().strict(),
     confirmPassword: Joi.string().valid(Joi.ref("password")).required().strict()
 });
@@ -30,10 +45,10 @@ const userRegisterSchema = Joi.object().keys({
 // login route
 router.post("/customer-login", (req, res) => {
     // get user input
-    let data = req.body;
+    const data = req.body;
 
     // validate input
-    Joi.validate(data, userLoginSchema, (err, value) => {
+    Joi.validate(data, loginSchema, (err, value) => {
         if (err) { // validation fails
             res.status(422).json({
                 status: "error",
@@ -62,8 +77,12 @@ router.post("/customer-login", (req, res) => {
                                 message: "Invalid Credentails!"
                             });
                         } else {
+                            // create a payload
+                            const { id, name, email, phone } = user;
+                            const payload = { id, name, email, phone };
+
                             // generate a token
-                            jwt.sign({ user }, jwtSecretKey, { expiresIn: "2 days" }, (err, token) => {
+                            jwt.sign({ payload }, jwtSecretKey, { expiresIn: "2 days" }, (err, token) => {
                                 if (err) {
                                     res.status(403).json({
                                         status: "error",
@@ -75,7 +94,7 @@ router.post("/customer-login", (req, res) => {
                                         status: "success",
                                         message: "Login Successful!",
                                         token: token,
-                                        data: user
+                                        data: payload
                                     });
                                 }
                             });
@@ -102,10 +121,10 @@ router.post("/customer-login", (req, res) => {
 // register route
 router.post("/customer-register", (req, res) => {
     // get user input
-    let data = req.body;
+    const data = req.body;
 
     // validate input
-    Joi.validate(data, userRegisterSchema, (err, value) => {
+    Joi.validate(data, registerSchema, (err, value) => {
         if (err) { // validation fails
                 res.status(422).json({
                 status: "error",
@@ -132,6 +151,100 @@ router.post("/customer-register", (req, res) => {
                     message: "Cannot register user!",
                     data: err
                 });
+            });
+        }
+    });
+});
+
+// update profile route
+router.post("/customer-update-profile", verifyToken, (req, res) => {
+    
+    // verify token
+    jwt.verify(req.token, jwtSecretKey, (err, data) => {
+        if(err) {
+            res.status(403).json({
+                status: "error",
+                message: "Unauthorized Access!"
+            });
+        } else {
+            // read data
+            const data = req.body;
+
+            // validate input
+            Joi.validate(data, profileSchema, (err, value) => {
+                if (err) { // validation fails
+                    res.status(422).json({
+                        status: "error",
+                        message: "Invalid request data",
+                        data: err.message
+                    });
+                } else { // validation succeeds
+                    // update user profile
+                    Customer.update({ name: data.name, email: data.email, phone: data.phone }, { where: { id: data.id } }).then(val => {
+                        console.log(val);
+                        res.status(200).json({
+                            status: "success",
+                            message: "Profile Updated"
+                        });
+                    }).catch(err => {
+                        res.status(200).json({
+                            status: "error",
+                            message: "Cannot update profile!",
+                            data: err
+                        });
+                    });
+                }
+            });
+        }
+    });
+});
+
+// change password route
+router.post("/customer-change-password", verifyToken, (req, res) => {
+    // verify token
+    jwt.verify(req.token, jwtSecretKey, (err, data) => {
+        if(err) {
+            res.status(403).json({
+                status: "error",
+                message: "Unauthorized Access!"
+            });
+        } else {
+            // read data
+            const data = req.body;
+
+            // validate input
+            Joi.validate(data, changePasswordSchema, (err, value) => {
+                if (err) { // validation fails
+                    res.status(422).json({
+                        status: "error",
+                        message: "Invalid request data",
+                        data: err.message
+                    });
+                } else { // validation succeeds
+                    // encrypt password
+                    encrypt.hashData(data.password).then(hash => {
+                        // update user profile
+                        Customer.update({ password: hash }, { where: { id: data.id } }).then(val => {
+                            console.log(val);
+                            res.status(200).json({
+                                status: "success",
+                                message: "Password has been changed"
+                            });
+                        }).catch(err => {
+                            res.status(200).json({
+                                status: "error",
+                                message: "Cannot change password",
+                                data: err
+                            });
+                        });
+                    }).catch(err => {
+                        res.status(200).json({
+                            status: "error",
+                            message: "New password cannot be hashed",
+                            data: err
+                        });
+                    });
+                }
             });
         }
     });
@@ -164,7 +277,7 @@ router.post("/trucker-login", (req, res) => {
     let data = req.body;
 
     // validate input
-    Joi.validate(data, userLoginSchema, (err, value) => {
+    Joi.validate(data, loginSchema, (err, value) => {
         if (err) { // validation fails
             res.status(422).json({
                 status: "error",
@@ -236,7 +349,7 @@ router.post("/trucker-register", (req, res) => {
     let data = req.body;
 
     // validate input
-    Joi.validate(data, userRegisterSchema, (err, value) => {
+    Joi.validate(data, registerSchema, (err, value) => {
         if (err) { // validation fails
             res.status(422).json({
                 status: "error",
@@ -262,6 +375,100 @@ router.post("/trucker-register", (req, res) => {
                     message: "Cannot register user!",
                     data: err
                 });
+            });
+        }
+    });
+});
+
+// update profile route
+router.post("/trucker-update-profile", verifyToken, (req, res) => {
+    
+    // verify token
+    jwt.verify(req.token, jwtSecretKey, (err, data) => {
+        if(err) {
+            res.status(403).json({
+                status: "error",
+                message: "Unauthorized Access!"
+            });
+        } else {
+            // read data
+            const data = req.body;
+
+            // validate input
+            Joi.validate(data, profileSchema, (err, value) => {
+                if (err) { // validation fails
+                    res.status(422).json({
+                        status: "error",
+                        message: "Invalid request data",
+                        data: err.message
+                    });
+                } else { // validation succeeds
+                    // update user profile
+                    Trucker.update({ name: data.name, email: data.email, phone: data.phone }, { where: { id: data.id } }).then(val => {
+                        console.log(val);
+                        res.status(200).json({
+                            status: "success",
+                            message: "Profile Updated"
+                        });
+                    }).catch(err => {
+                        res.status(200).json({
+                            status: "error",
+                            message: "Cannot update profile!",
+                            data: err
+                        });
+                    });
+                }
+            });
+        }
+    });
+});
+
+// change password route
+router.post("/trucker-change-password", verifyToken, (req, res) => {
+    // verify token
+    jwt.verify(req.token, jwtSecretKey, (err, data) => {
+        if(err) {
+            res.status(403).json({
+                status: "error",
+                message: "Unauthorized Access!"
+            });
+        } else {
+            // read data
+            const data = req.body;
+
+            // validate input
+            Joi.validate(data, changePasswordSchema, (err, value) => {
+                if (err) { // validation fails
+                    res.status(422).json({
+                        status: "error",
+                        message: "Invalid request data",
+                        data: err.message
+                    });
+                } else { // validation succeeds
+                    // encrypt password
+                    encrypt.hashData(data.password).then(hash => {
+                        // update user profile
+                        Trucker.update({ password: hash }, { where: { id: data.id } }).then(val => {
+                            console.log(val);
+                            res.status(200).json({
+                                status: "success",
+                                message: "Password has been changed"
+                            });
+                        }).catch(err => {
+                            res.status(200).json({
+                                status: "error",
+                                message: "Cannot change password",
+                                data: err
+                            });
+                        });
+                    }).catch(err => {
+                        res.status(200).json({
+                            status: "error",
+                            message: "New password cannot be hashed",
+                            data: err
+                        });
+                    });
+                }
             });
         }
     });
