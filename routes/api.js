@@ -1,9 +1,12 @@
 const express = require("express");
 const Joi = require("joi");
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const path = require("path");
 const encrypt = require("../config/encryption");
 const Customer = require("../models/Customer");
 const Trucker = require("../models/Trucker");
+const Request = require("../models/Request");
 const settings = require("../config/settings");
 const router = express.Router();
 
@@ -39,6 +42,35 @@ const changePasswordSchema = Joi.object().keys({
     password: Joi.string().min(6).required().strict(),
     confirmPassword: Joi.string().valid(Joi.ref("password")).required().strict()
 });
+
+// define a storage
+const storage = multer.diskStorage({
+    destination: './public/uploads/',
+    filename: (req, file, cb) => {
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    }
+});
+
+// initialize upload constant
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 1000000 },
+    fileFilter: (req, file, cb) => { checkUploadedFile(file, cb ); }
+}).single('image');
+
+// method to filter uploaded file
+function checkUploadedFile(file, cb) {
+    const filetypes = /jpeg|jpg|png|gif/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+
+    // check for uploaded file type
+    if(mimetype && extname) {
+        return cb(null, true);
+    } else {
+        cb('Error: Images only allowed!');
+    }
+}
 
 /* ***** Customer Routes ***** */
 
@@ -260,10 +292,42 @@ router.post("/customer-request", verifyToken, (req, res) => {
                 message: "Unauthorized Access!"
             });
         } else {
-            res.status(200).json({
-                status: "success",
-                message: "Request sent...",
-                data
+            // upload image
+            upload(req, res, (err) => {
+                if(err) {
+                    res.status(200).json({
+                        status: "error",
+                        message: "Cannot upload your image!"
+                    });
+                } else {
+                    // get data from request
+                    const { from, to, title, description, type, reqdate, reqtime } = req.body;
+                    const image = `uploads/${req.file.filename}`;
+
+                    // store file name inside database
+                    Request.create({
+                        lfrom: from,
+                        lto: to,
+                        title: title,
+                        description: description,
+                        type: type,
+                        reqdate: reqdate,
+                        reqtime: reqtime,
+                        imgname: image
+                    }).then(val => {
+                        res.status(201).json({
+                            status: "success",
+                            message: "Your order has been sent!",
+                            data: val
+                        });
+                    }).catch(err => {
+                        res.status(200).json({
+                            status: "error",
+                            message: "Cannot complete your order!",
+                            data: err
+                        });
+                    });
+                }
             });
         }
     });

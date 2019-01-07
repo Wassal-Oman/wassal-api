@@ -68,12 +68,13 @@ const Request = sequelize.define('requests', {
             max: 1
         }
     },
-    image: {
+    imgname: {
         type: Sequelize.STRING,
-        allowNull: false,
-        validate: {
-            isUrl: true
-        }
+        allowNull: false
+    },
+    title: {
+        type: Sequelize.STRING,
+        allowNull: false
     },
     description: {
         type: Sequelize.TEXT,
@@ -102,7 +103,7 @@ const Request = sequelize.define('requests', {
 Request.belongsTo(Customer);
 
 // create request table once application starts
-sequelize.sync().then(() => {
+sequelize.sync({ force: true }).then(() => {
     console.log('Request Table Created!');
 }).catch((err) => {
     console.log(err);
