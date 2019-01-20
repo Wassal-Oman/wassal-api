@@ -27,8 +27,8 @@ sequelize.authenticate().then(() => {
     console.error('Unable to connect to the database:', err);
 });
 
-// rate schema
-const Rate = sequelize.define('rates', {
+// schema
+const Quotation = sequelize.define('quotations', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -39,21 +39,34 @@ const Rate = sequelize.define('rates', {
         allowNull: false,
         defaultValue: 0.0
     },
-    ratetime: {
+    quotation_date: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: '2018-01-01',
+        validate: {
+            isDate: true
+        }
+    },
+    quotation_time: {
         type: Sequelize.TIME,
         allowNull: false
+    },
+    status: {
+        type: Sequelize.TINYINT,
+        allowNull: false,
+        defaultValue: 1
     }
 });
 
-// create a foreign key relationships between Rate and Trucker / Request tables
-Rate.belongsTo(Trucker);
-Rate.belongsTo(Request);
+// create a foreign key relationships
+Quotation.belongsTo(Request);
+Quotation.belongsTo(Trucker);
 
 // create rate table once application starts
 sequelize.sync().then(() => {
-    console.log('Rate Table Created!');
+    console.log('Quotations Table Created!');
 }).catch((err) => {
     console.log(err);
-});;
+});
 
-module.exports = Rate;
+module.exports = Quotation;

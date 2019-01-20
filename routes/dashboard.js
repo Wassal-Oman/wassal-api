@@ -5,6 +5,7 @@ const Trucker = require('../models/Trucker');
 const Truck = require('../models/Truck');
 const Request = require('../models/Request');
 const encrypt = require('../config/encryption');
+const Type = require('../models/Type');
 
 // initialize router
 const router = express.Router();
@@ -122,6 +123,27 @@ router.get('/admins', sessionChecker, (req, res) => {
         res.redirect('/500');
     });
 });
+
+// add truck type route
+router.route('/add-truck-type')
+    .get(sessionChecker, (req, res) => {
+        res.render('add-truck-type');
+    }).post((req, res) => {
+        const type = req.body.type;
+
+        // create a new type
+        Type.create({
+            type
+        }).then(val => {
+            console.log(val);
+            req.flash('success', 'New Truck Type has been Added');
+            res.redirect(req.get('referer'));
+        }).catch(err => {
+            console.log(err);
+            req.flash('error', 'Cannot Add This Type');
+            res.redirect(req.get('referer'));
+        });
+    });
 
 // customers route
 router.get('/customers', sessionChecker, (req, res) => {

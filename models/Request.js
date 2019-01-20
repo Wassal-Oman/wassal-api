@@ -2,6 +2,7 @@
 const Sequelize = require('sequelize');
 const settings = require('../config/settings');
 const Customer = require('./Customer');
+const Type = require('./Type');
 
 // import database connection details
 const conn = settings.connection;
@@ -33,46 +34,35 @@ const Request = sequelize.define('requests', {
         primaryKey: true,
         autoIncrement: true
     },
-    lfrom: {
+    location: {
         type: Sequelize.STRING,
         allowNull: false,
     },
-    lto: {
-        type: Sequelize.STRING,
-        allowNull: false
-    },
-    latfrom: {
-        type: Sequelize.DOUBLE,
-        allowNull: false,
-        defaultValue: 0.0
-    },
-    latto: {
-        type: Sequelize.DOUBLE,
-        allowNull: false,
-        defaultValue: 0.0
-    },
-    lngfrom: {
-        type: Sequelize.DOUBLE,
-        allowNull: false,
-        defaultValue: 0.0
-    },
-    lngto: {
-        type: Sequelize.DOUBLE,
-        allowNull: false,
-        defaultValue: 0.0
-    },
-    type: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        validate: {
-            max: 1
-        }
-    },
-    imgname: {
+    destination: {
         type: Sequelize.STRING,
         allowNull: false
     },
-    title: {
+    lat_from: {
+        type: Sequelize.DOUBLE,
+        allowNull: false,
+        defaultValue: 0.0
+    },
+    lat_to: {
+        type: Sequelize.DOUBLE,
+        allowNull: false,
+        defaultValue: 0.0
+    },
+    lng_from: {
+        type: Sequelize.DOUBLE,
+        allowNull: false,
+        defaultValue: 0.0
+    },
+    lng_to: {
+        type: Sequelize.DOUBLE,
+        allowNull: false,
+        defaultValue: 0.0
+    },
+    img: {
         type: Sequelize.STRING,
         allowNull: false
     },
@@ -80,7 +70,7 @@ const Request = sequelize.define('requests', {
         type: Sequelize.TEXT,
         allowNull: false
     },
-    reqdate: {
+    request_date: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: '2018-01-01',
@@ -88,7 +78,7 @@ const Request = sequelize.define('requests', {
             isDate: true
         }
     },
-    reqtime: {
+    request_time: {
         type: Sequelize.TIME,
         allowNull: false
     },
@@ -99,8 +89,9 @@ const Request = sequelize.define('requests', {
     }
 });
 
-// create a foreign key relationship between Customer and Request tables
+// create a foreign key relationships
 Request.belongsTo(Customer);
+Request.belongsTo(Type);
 
 // create request table once application starts
 sequelize.sync({ force: true }).then(() => {

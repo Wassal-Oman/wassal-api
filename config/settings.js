@@ -1,8 +1,8 @@
 const connection = {
-    host: "wassal-uat.ck5ah9bt9gsx.us-east-1.rds.amazonaws.com",
-    user: "wassal",
-    password: "Wassal123$",
-    database: "wassal_uat",
+    host: "31.170.166.179",
+    user: "u327976002_uat",
+    password: "Wassal@123",
+    database: "u327976002_uat",
     dialect: "mysql"
 };
 
